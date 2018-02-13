@@ -33,6 +33,12 @@ ssize_t	ft_dprintf(int fd, char const *fmt, ...)
 ssize_t	ft_vdprintf(int fd, char const *fmt, va_list ap)
 {
 	t_ctx ctx;
+	out_wdata data;
+
+	data = (out_wdata) {
+		.fd = fd,
+		.nb = 0
+	};
 
 	ctx = (t_ctx) {
 		.va = (t_va_slist) {
@@ -42,12 +48,12 @@ ssize_t	ft_vdprintf(int fd, char const *fmt, va_list ap)
 		.idx = 0,
 		.write = outn,
 		.writer = outr,
-		.write_data = &fd
+		.write_data = &data
 	};
 	va_copy(ctx.va.ap, ap);
 	eval_fmt((char *)fmt, &ctx);
 	outflush(&ctx);
-	return (0);
+	return (data.nb);
 }
 
 ssize_t	ft_asnprintf(char **out, char const *fmt, ...)
