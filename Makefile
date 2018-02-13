@@ -1,7 +1,7 @@
 NAME=libftprintf.a
 CFLAGS=-Iinclude
 
-SRCS=src/printf.c
+SRCS=src/arg.c src/eval.c src/fmt.c src/parse.c src/printf.c src/write.c
 
 OBJS=$(SRCS:.c=.o)
 
