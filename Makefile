@@ -1,5 +1,6 @@
 NAME=libftprintf.a
 CFLAGS=-Iinclude
+CC ?= gcc
 
 SRCS=src/arg.c src/eval.c src/fmt.c src/parse.c src/printf.c src/write.c
 
