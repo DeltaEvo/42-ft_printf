@@ -39,14 +39,14 @@ static int exec(t_parse *res, t_fmt *f, t_farg *arg_begin, t_ctx *ctx)
 		f->widtharg = arg_at_index(arg_begin, res->width);
 	if (TIDX(f->end[-1]) < 0 || TIDX(f->end[-1]) > sizeof(g_pf)/sizeof(*g_pf))
 	{
-		ctx->write(ctx, f->begin - 1, f->end - f->begin + 1);
+		ctx->write(ctx, f->begin, f->end - f->begin);
 		return (0);
 	}
 	fn = g_pf[TIDX(f->end[-1])];
 	if (fn)
 		return (fn(f, ctx));
 	else 
-		return (0);
+		return (invalid_arg(f, ctx));
 }
 
 inline static void next_arg(t_farg **arg, t_farg *next, t_fmt *fmt, t_parse *res)

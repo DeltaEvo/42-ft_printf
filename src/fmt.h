@@ -20,6 +20,7 @@ int			fmtx(t_fmt *fmt, t_ctx *ctx);
 int			fmtxu(t_fmt *fmt, t_ctx *ctx);
 int			fmtc(t_fmt *fmt, t_ctx *ctx);
 int			fmtcu(t_fmt *fmt, t_ctx *ctx);
+int			invalid_arg(t_fmt *fmt, t_ctx *ctx);
 
 #define TIDX(i) ((i) - '%')
 
@@ -31,7 +32,7 @@ static t_pf		*g_pf[] =
 	[TIDX('p')] = fmtp,
 	[TIDX('d')] = fmtd,
 	[TIDX('D')] = fmtdu,
-	[TIDX('i')] = fmti,
+	[TIDX('i')] = fmtd,
 	[TIDX('o')] = fmto,
 	[TIDX('O')] = fmtou,
 	[TIDX('u')] = fmtu,

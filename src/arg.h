@@ -23,10 +23,15 @@ typedef enum e_types {
 	NONE,
 	PTR,
 	INT,
+	UINT,
 	LONG,
+	ULONG,
 	LLONG,
+	ULLONG,
 	SIZET,
+	USIZET,
 	IMAX,
+	UIMAX,
 	DBL,
 	LDBL
 }			t_types;

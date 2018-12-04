@@ -6,14 +6,24 @@ static void pop_arg(t_farg *arg, va_list ap) {
 		arg->value.p = va_arg(ap, void *);
 	else if (arg->type == INT)
 		arg->value.i = va_arg(ap, int);
+	else if (arg->type == UINT)
+		arg->value.i = va_arg(ap, unsigned int);
 	else if (arg->type == LONG)
 		arg->value.i = va_arg(ap, long);
+	else if (arg->type == ULONG)
+		arg->value.i = va_arg(ap, unsigned long);
 	else if (arg->type == LLONG)
 		arg->value.i = va_arg(ap, long long);
+	else if (arg->type == ULLONG)
+		arg->value.i = va_arg(ap, unsigned long long);
+	else if (arg->type == USIZET)
+		arg->value.i = va_arg(ap, ssize_t);
 	else if (arg->type == SIZET)
 		arg->value.i = va_arg(ap, size_t);
 	else if (arg->type == IMAX)
 		arg->value.i = va_arg(ap, intmax_t);
+	else if (arg->type == UIMAX)
+		arg->value.i = va_arg(ap, uintmax_t);
 	else if (arg->type == DBL)
 		arg->value.f = va_arg(ap, double);
 	else if (arg->type == LDBL)
