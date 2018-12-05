@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   fmt.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/12/05 13:51:38 by dde-jesu          #+#    #+#             */
+/*   Updated: 2018/12/05 14:06:59 by dde-jesu         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "fmt.h"
 #include "parse.h"
 #include "ft/convert.h"
@@ -5,16 +17,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-void pad_start(size_t len, t_fmt *fmt, t_ctx *ctx)
+void	pad_start(size_t len, t_fmt *fmt, t_ctx *ctx, uint8_t prec_c)
 {
 	if (!(fmt->flags & PF_MINUS) && len < fmt->width)
-		ctx->writer(ctx, fmt->flags & PF_ZERO ? '0' : ' ', fmt->width - len);
+		ctx->writer(ctx, fmt->flags & PF_ZERO
+		&& !(prec_c && fmt->precision != -1) ? '0' : ' ', fmt->width - len);
 }
 
-void pad_end(size_t len, t_fmt *fmt, t_ctx *ctx)
+void	pad_end(size_t len, t_fmt *fmt, t_ctx *ctx)
 {
 	if (fmt->flags & PF_MINUS && len < fmt->width)
 		ctx->writer(ctx, ' ', fmt->width - len);
+}
+
+uintmax_t	downcast(uint8_t length, uintmax_t nb, uint8_t unsign)
+{
+	if (unsign)
+	{
+		if (length & PF_HH)
+			return ((unsigned char)nb);
+		if (length & PF_H)
+			return ((unsigned short)nb);
+	}
+	else
+	{
+		if (length & PF_HH)
+			return ((char)nb);
+		if (length & PF_H)
+			return ((short)nb);
+	}
+	return (nb);
 }
 
 t_types	type_for_length(uint8_t length, uint8_t unsign)
@@ -32,7 +64,7 @@ t_types	type_for_length(uint8_t length, uint8_t unsign)
 
 int	invalid_arg(t_fmt *fmt, t_ctx *ctx)
 {
-	pad_start(1, fmt, ctx);
+	pad_start(1, fmt, ctx, 0);
 	ctx->write(ctx, fmt->end - 1, 1);
 	pad_end(1, fmt, ctx);
 	return (0);
@@ -40,7 +72,7 @@ int	invalid_arg(t_fmt *fmt, t_ctx *ctx)
 
 int	fmt(t_fmt *fmt, t_ctx *ctx)
 {
-	pad_start(1, fmt, ctx);
+	pad_start(1, fmt, ctx, 0);
 	ctx->write(ctx, "%", 1);
 	pad_end(1, fmt, ctx);
 	return (0);
@@ -53,7 +85,7 @@ void	write_wchar(t_ctx *ctx, const wchar_t *s, size_t len)
 
 	while (*s && len)
 	{
-		if ((r = wctomb(buffer, *s++)) < 1 || r > len)
+		if ((r = wctomb(buffer, *s++)) < 1 || (size_t)r > len)
 			break ;
 		ctx->write(ctx, buffer, r);
 		len -= r;
@@ -62,7 +94,7 @@ void	write_wchar(t_ctx *ctx, const wchar_t *s, size_t len)
 
 size_t	wstr_len(const wchar_t *s)
 {
-	size_t len;
+	size_t	len;
 	char	buffer[MB_CUR_MAX];
 	int		r;
 
@@ -78,14 +110,14 @@ size_t	wstr_len(const wchar_t *s)
 
 size_t	wstr_nlen(const wchar_t *s, size_t n)
 {
-	size_t len;
+	size_t	len;
 	char	buffer[MB_CUR_MAX];
 	int		r;
 
 	len = 0;
 	while (*s && n)
 	{
-		if ((r = wctomb(buffer, *s++)) < 1 || r > n)
+		if ((r = wctomb(buffer, *s++)) < 1 || (size_t)r > n)
 			break ;
 		len += r;
 		n -= r;
@@ -95,19 +127,21 @@ size_t	wstr_nlen(const wchar_t *s, size_t n)
 
 int	fmts(t_fmt *fmt, t_ctx *ctx)
 {
-	size_t len;
+	size_t	len;
 
 	TRY(get_arg(fmt->param, PTR, &ctx->va));
 	if (fmt->param->value.p)
 	{
 		if (fmt->precision != -1)
-			len = fmt->length & PF_L ? wstr_nlen(fmt->param->value.p, fmt->precision): strnlen(fmt->param->value.p, fmt->precision);
+			len = (fmt->length & PF_L ? strnlen(fmt->param->value.p,
+			fmt->precision) : wstr_nlen(fmt->param->value.p, fmt->precision));
 		else
-			len = fmt->length & PF_L ? wstr_len(fmt->param->value.p): ft_strlen(fmt->param->value.p);
+			len = (fmt->length & PF_L ? ft_strlen(fmt->param->value.p)
+					: wstr_len(fmt->param->value.p));
 	}
 	else
-		len = 6;
-	pad_start(len, fmt, ctx);
+		len = fmt->precision == -1 ? 6 : fmt->precision;
+	pad_start(len, fmt, ctx, 0);
 	if (fmt->param->value.p)
 		if (fmt->length & PF_L)
 			write_wchar(ctx, fmt->param->value.p, len);
@@ -125,7 +159,6 @@ int	fmtsu(t_fmt *fmt, t_ctx *ctx)
 	return (fmts(fmt, ctx));
 }
 
-
 int	fmtd(t_fmt *fmt, t_ctx *ctx)
 {
 	t_int_str	res;
@@ -133,9 +166,9 @@ int	fmtd(t_fmt *fmt, t_ctx *ctx)
 	size_t		len;
 
 	TRY(get_arg(fmt->param, type_for_length(fmt->length, 0), &ctx->va));
-	res = ft_int_to_str(fmt->param->value.i);
+	res = ft_int_to_str(downcast(fmt->length, fmt->param->value.i, 0));
 	len = res.len;
-	if (fmt->precision != -1 && fmt->precision > len)
+	if (fmt->precision != -1 && (size_t)fmt->precision > len)
 		len = fmt->precision + (res.str[0] == '-');
 	len += !!(fmt->flags & (PF_SPACE | PF_PLUS));
 	len -= !!(fmt->precision == 0 && res.str[0] == '0');
@@ -143,10 +176,12 @@ int	fmtd(t_fmt *fmt, t_ctx *ctx)
 		ctx->write(ctx, res.str, offset = 1);
 	else
 		offset = 0;
-	if (fmt->flags & PF_ZERO && fmt->flags & (PF_PLUS | PF_SPACE) && res.str[0] != '-')
+	if (fmt->flags & PF_ZERO && fmt->flags & (PF_PLUS | PF_SPACE) &&
+			res.str[0] != '-')
 		ctx->write(ctx, fmt->flags & PF_PLUS ? "+" : " ", 1);
-	pad_start(len, fmt, ctx);
-	if (!(fmt->flags & PF_ZERO) && fmt->flags & (PF_PLUS | PF_SPACE) && res.str[0] != '-')
+	pad_start(len, fmt, ctx, 1);
+	if (!(fmt->flags & PF_ZERO) && fmt->flags & (PF_PLUS | PF_SPACE) &&
+			res.str[0] != '-')
 		ctx->write(ctx, fmt->flags & PF_PLUS ? "+" : " ", 1);
 	if (res.str[0] == '-' && !offset)
 		ctx->write(ctx, "-", offset = 1);
@@ -167,14 +202,23 @@ int	fmtdu(t_fmt *fmt, t_ctx *ctx)
 int	fmto(t_fmt *fmt, t_ctx *ctx)
 {
 	t_int_str8	res;
+	size_t		len;
 
 	TRY(get_arg(fmt->param, type_for_length(fmt->length, 1), &ctx->va));
-	res = ft_uint_to_str8(fmt->param->value.i);
-	pad_start(res.len + (fmt->flags & PF_HASH ? res.str[0] != '0' : 0), fmt, ctx);
-	if (fmt->flags & PF_HASH && res.str[0] != '0')
+	res = ft_uint_to_str8(downcast(fmt->length, fmt->param->value.i, 1));
+	len = res.len;
+	if (fmt->precision != -1 && (size_t)fmt->precision > len)
+		len = fmt->precision;
+	len += (fmt->flags & PF_HASH ? res.str[0] != '0' : 0);
+	len -= !!(fmt->precision == 0 && res.str[0] == '0');
+	pad_start(len, fmt, ctx, 1);
+	if (fmt->flags & PF_HASH && (res.str[0] != '0' || fmt->precision == 0))
 		ctx->write(ctx, "0", 1);
-	ctx->write(ctx, res.str, res.len);
-	pad_end(res.len + (fmt->flags & PF_HASH ? res.str[0] != '0' : 0), fmt, ctx);
+	if (fmt->precision != -1 && fmt->precision > res.len)
+		ctx->writer(ctx, '0', fmt->precision - res.len);
+	if (!(fmt->precision == 0 && res.str[0] == '0'))
+		ctx->write(ctx, res.str, res.len);
+	pad_end(len, fmt, ctx);
 	return (0);
 }
 
@@ -187,12 +231,20 @@ int	fmtou(t_fmt *fmt, t_ctx *ctx)
 int	fmtu(t_fmt *fmt, t_ctx *ctx)
 {
 	t_int_str	res;
+	size_t		len;
 
 	TRY(get_arg(fmt->param, type_for_length(fmt->length, 1), &ctx->va));
-	res = ft_uint_to_str(fmt->param->value.i);
-	pad_start(res.len, fmt, ctx);
-	ctx->write(ctx, res.str, res.len);
-	pad_end(res.len, fmt, ctx);
+	res = ft_uint_to_str(downcast(fmt->length, fmt->param->value.i, 1));
+	len = res.len;
+	if (fmt->precision != -1 && (size_t)fmt->precision > len)
+		len = fmt->precision;
+	len -= !!(fmt->precision == 0 && res.str[0] == '0');
+	pad_start(len, fmt, ctx, 1);
+	if (fmt->precision != -1 && fmt->precision > res.len)
+		ctx->writer(ctx, '0', fmt->precision - res.len);
+	if (!(fmt->precision == 0 && res.str[0] == '0'))
+		ctx->write(ctx, res.str, res.len);
+	pad_end(len, fmt, ctx);
 	return (0);
 }
 
@@ -205,19 +257,28 @@ int	fmtuu(t_fmt *fmt, t_ctx *ctx)
 int	fmtx_impl(t_fmt *fmt, t_ctx *ctx, uint8_t maj, uint8_t prefix)
 {
 	t_int_str16	res;
+	size_t		len;
 
 	TRY(get_arg(fmt->param, type_for_length(fmt->length, 1), &ctx->va));
 	if (!prefix)
 		prefix = fmt->flags & PF_HASH && fmt->param->value.i;
-	res = ft_uint_to_str16(fmt->param->value.i, maj);
+	res = ft_uint_to_str16(downcast(fmt->length, fmt->param->value.i, 1), maj);
+	len = res.len;
+	if (fmt->precision != -1 && (size_t)fmt->precision > len)
+		len = fmt->precision;
+	len += (prefix ? 2 : 0);
+	len -= !!(fmt->precision == 0 && res.str[0] == '0');
 	if (!(fmt->flags & PF_ZERO))
-		pad_start(res.len + (prefix ? 2 : 0), fmt, ctx);
+		pad_start(len, fmt, ctx, 1);
 	if (prefix)
 		ctx->write(ctx, maj ? "0X" : "0x", 2);
 	if (fmt->flags & PF_ZERO)
-		pad_start(res.len + (prefix ? 2 : 0), fmt, ctx);
-	ctx->write(ctx, res.str, res.len);
-	pad_end(res.len + (prefix ? 2 : 0), fmt, ctx);
+		pad_start(len, fmt, ctx, 1);
+	if (fmt->precision != -1 && fmt->precision > res.len)
+		ctx->writer(ctx, '0', fmt->precision - res.len);
+	if (!(fmt->precision == 0 && res.str[0] == '0'))
+		ctx->write(ctx, res.str, res.len);
+	pad_end(len, fmt, ctx);
 	return (0);
 }
 
@@ -252,8 +313,8 @@ int	fmtc(t_fmt *fmt, t_ctx *ctx)
 	{
 		buffer[0] = fmt->param->value.i;
 		len = 1;
-	}	
-	pad_start(len, fmt, ctx);
+	}
+	pad_start(len, fmt, ctx, 0);
 	ctx->write(ctx, buffer, len);
 	pad_end(len, fmt, ctx);
 	return (0);

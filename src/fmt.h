@@ -1,5 +1,17 @@
-#ifndef FT_PRINTF_FMT_H
-# define FT_PRINTF_FMT_H
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   fmt.h                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/12/05 13:58:32 by dde-jesu          #+#    #+#             */
+/*   Updated: 2018/12/05 13:59:24 by dde-jesu         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef FMT_H
+# define FMT_H
 
 # include "eval.h"
 
@@ -22,7 +34,7 @@ int			fmtc(t_fmt *fmt, t_ctx *ctx);
 int			fmtcu(t_fmt *fmt, t_ctx *ctx);
 int			invalid_arg(t_fmt *fmt, t_ctx *ctx);
 
-#define TIDX(i) ((i) - '%')
+# define TIDX(i) ((i) - '%')
 
 static t_pf		*g_pf[] =
 {

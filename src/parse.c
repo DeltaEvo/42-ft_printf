@@ -1,9 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/12/05 13:21:24 by dde-jesu          #+#    #+#             */
+/*   Updated: 2018/12/05 13:24:41 by dde-jesu         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "parse.h"
 #include <ctype.h>
 
 static uint32_t	atoio(char **it)
 {
-	int64_t i;
+	int64_t	i;
+
 	i = 0;
 	while (isdigit(**it) && i >= 0)
 		i = i * 10 + *(*it)++ - '0';
@@ -13,21 +26,24 @@ static uint32_t	atoio(char **it)
 			++*it;
 		i = 0;
 	}
-	return (uint32_t)(i);
+	return ((uint32_t)i);
 }
 
-t_parse parse(char **it, t_fmt *f, uint32_t *idx)
+t_parse	parse(char **it, t_fmt *f, uint32_t *idx)
 {
 	t_parse	res;
 
 	f->begin = ++*it;
-	if (isdigit(**it)) {
+	if (isdigit(**it))
+	{
 		res.param = atoio(it) - 1;
-		if (*(*it)++ != '$') {
+		if (*(*it)++ != '$')
+		{
 			*it = f->begin;
 			res.param = -1;
 		}
-	} else
+	}
+	else
 		res.param = -1;
 	f->flags = parse_flags(it);
 	res.width = parse_width(it, f, idx);
@@ -40,9 +56,9 @@ t_parse parse(char **it, t_fmt *f, uint32_t *idx)
 	return (res);
 }
 
-uint8_t parse_flags(char **it)
+uint8_t	parse_flags(char **it)
 {
-	uint8_t flag;
+	uint8_t	flag;
 
 	if (FIDX(**it) < 0 || (size_t)FIDX(**it) >
 		(sizeof(g_flags) / sizeof(*g_flags)))
@@ -59,13 +75,13 @@ int32_t	parse_width(char **it, t_fmt *fmt, uint32_t *idx)
 {
 	fmt->width = 0;
 	if (**it == '*')
-		return isdigit(*++*it) ? atoio(it) - 1 : (*idx)++;
+		return (isdigit(*++*it) ? atoio(it) - 1 : (*idx)++);
 	else if (isdigit(**it) || **it == '-')
 		fmt->width = atoio(it);
 	return (-1);
 }
 
-int32_t parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
+int32_t	parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
 {
 	if (**it == '.')
 	{
@@ -73,7 +89,7 @@ int32_t parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
 		if (**it == '*')
 		{
 			fmt->precision = -1;
-			return isdigit(*++*it) ? atoio(it) - 1 : (*idx)++;
+			return (isdigit(*++*it) ? atoio(it) - 1 : (*idx)++);
 		}
 		else if (isdigit(**it))
 			fmt->precision = atoio(it);
@@ -83,7 +99,7 @@ int32_t parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
 	return (-1);
 }
 
-uint8_t parse_length(char **it)
+uint8_t	parse_length(char **it)
 {
 	uint8_t flag;
 
