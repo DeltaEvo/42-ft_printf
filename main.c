@@ -6,5 +6,5 @@
 int main() {
 	setlocale(LC_ALL, "en_US.UTF-8");
 
-	printf("%#.5x", 120);
+	ft_printf("%#.5x", 120);
 }

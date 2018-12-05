@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:59:50 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 14:07:19 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/05 14:16:20 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,9 @@ ssize_t	ft_asnprintf(char **out, char const *fmt, ...)
 ssize_t	ft_vasnprintf(char **out, char const *fmt, va_list ap)
 {
 	t_ctx			ctx;
-	buffer_wdata	data;
+	t_buffer_wdata	data;
 
-	data = (buffer_wdata) {
+	data = (t_buffer_wdata) {
 		.buffer = NULL,
 		.nb = 0,
 		.len = 0,

@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:37:19 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 13:48:18 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/05 14:30:54 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,22 +96,22 @@ static void	next_fmt(t_fmt **begin, t_fmt **f, t_fmt *next)
 
 void		eval_fmt(char *fmt, t_ctx *ctx)
 {
-	char			*c;
+	const char		*c = fmt;
 	t_fmt			*f;
 	t_fmt			*f_b;
 	t_parse			res;
 	t_farg			*arg;
-	const t_farg	arg_b = { .idx = 0, .type = NONE };
+	t_farg 			arg_b;
 
-	c = fmt;
 	f_b = NULL;
+	arg_b = (t_farg) { .idx = 0, .type = NONE };
 	arg = (t_farg *)&arg_b;
 	while ((c = strchr(c, '%')))
 	{
 		if (!ctx->va.lock)
 			ctx->write(ctx, f_b ? f->end : fmt, c - (f_b ? f->end : fmt));
-		next_fmt((t_fmt **)&f_b, &f, alloca(sizeof(t_fmt)));
-		res = parse(&c, f, &ctx->idx);
+		next_fmt(&f_b, &f, alloca(sizeof(t_fmt)));
+		res = parse((char **)&c, f, &ctx->idx);
 		res.max -= arg->idx;
 		while (res.max-- > 0)
 			next_arg(&arg, alloca(sizeof(t_farg)), f, &res);

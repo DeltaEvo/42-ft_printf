@@ -10,16 +10,21 @@ all: $(NAME)
 
 $(OBJS): Makefile
 
-$(NAME): $(OBJS)
+libft/libft.a:
+	$(MAKE) -C libft
+
+$(NAME): $(OBJS) libft/libft.a
 	cp libft/libft.a $(NAME)
 	ar rcs $(NAME) $(OBJS)
 
 clean:
+	$(MAKE) -C libft clean
 	rm -f $(OBJS)
 
 fclean: clean
+	$(MAKE) -C libft fclean
 	rm -rf $(NAME)
 
-re: fclean $(NAME)
+re: fclean all
 
 .PHONY: all clean fclean re
