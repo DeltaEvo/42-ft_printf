@@ -1,5 +1,5 @@
 NAME=libftprintf.a
-CFLAGS=-Iinclude -Ilibft/include
+CFLAGS=-Iinclude -Ilibft/include -g
 CC=gcc
 
 SRCS=src/arg.c src/eval.c src/fmt.c src/parse.c src/printf.c src/write_buffer.c src/write_out.c

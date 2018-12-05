@@ -3,6 +3,7 @@
 #include "ft/convert.h"
 #include "ft/str.h"
 #include <stdlib.h>
+#include <string.h>
 
 void pad_start(size_t len, t_fmt *fmt, t_ctx *ctx)
 {
@@ -45,16 +46,51 @@ int	fmt(t_fmt *fmt, t_ctx *ctx)
 	return (0);
 }
 
-void	write_wchar(t_ctx *ctx, const wchar_t *s)
+void	write_wchar(t_ctx *ctx, const wchar_t *s, size_t len)
 {
 	char	buffer[MB_CUR_MAX];
-	size_t	len;
+	int		r;
 
+	while (*s && len)
+	{
+		if ((r = wctomb(buffer, *s++)) < 1 || r > len)
+			break ;
+		ctx->write(ctx, buffer, r);
+		len -= r;
+	}
+}
+
+size_t	wstr_len(const wchar_t *s)
+{
+	size_t len;
+	char	buffer[MB_CUR_MAX];
+	int		r;
+
+	len = 0;
 	while (*s)
 	{
-		len = wctomb(buffer, *s++);
-		ctx->write(ctx, buffer, len);
+		if ((r = wctomb(buffer, *s++)) < 1)
+			break ;
+		len += r;
 	}
+	return (len);
+}
+
+size_t	wstr_nlen(const wchar_t *s, size_t n)
+{
+	size_t len;
+	char	buffer[MB_CUR_MAX];
+	int		r;
+
+	len = 0;
+	while (*s && n)
+	{
+		if ((r = wctomb(buffer, *s++)) < 1 || r > n)
+			break ;
+		len += r;
+		n -= r;
+	}
+	return (len);
 }
 
 int	fmts(t_fmt *fmt, t_ctx *ctx)
@@ -63,17 +99,22 @@ int	fmts(t_fmt *fmt, t_ctx *ctx)
 
 	TRY(get_arg(fmt->param, PTR, &ctx->va));
 	if (fmt->param->value.p)
-		len = fmt->length & PF_L ? wcslen(fmt->param->value.p) : ft_strlen(fmt->param->value.p);
+	{
+		if (fmt->precision != -1)
+			len = fmt->length & PF_L ? wstr_nlen(fmt->param->value.p, fmt->precision): strnlen(fmt->param->value.p, fmt->precision);
+		else
+			len = fmt->length & PF_L ? wstr_len(fmt->param->value.p): ft_strlen(fmt->param->value.p);
+	}
 	else
 		len = 6;
 	pad_start(len, fmt, ctx);
 	if (fmt->param->value.p)
 		if (fmt->length & PF_L)
-			write_wchar(ctx, fmt->param->value.p);
+			write_wchar(ctx, fmt->param->value.p, len);
 		else
 			ctx->write(ctx, fmt->param->value.p, len);
 	else
-		ctx->write(ctx, "(null)", 6);
+		ctx->write(ctx, "(null)", len);
 	pad_end(len, fmt, ctx);
 	return (0);
 }
@@ -89,20 +130,31 @@ int	fmtd(t_fmt *fmt, t_ctx *ctx)
 {
 	t_int_str	res;
 	size_t		offset;
+	size_t		len;
 
 	TRY(get_arg(fmt->param, type_for_length(fmt->length, 0), &ctx->va));
 	res = ft_int_to_str(fmt->param->value.i);
+	len = res.len;
+	if (fmt->precision != -1 && fmt->precision > len)
+		len = fmt->precision + (res.str[0] == '-');
+	len += !!(fmt->flags & (PF_SPACE | PF_PLUS));
+	len -= !!(fmt->precision == 0 && res.str[0] == '0');
 	if (fmt->flags & PF_ZERO && (res.str[0] == '-'))
 		ctx->write(ctx, res.str, offset = 1);
 	else
 		offset = 0;
 	if (fmt->flags & PF_ZERO && fmt->flags & (PF_PLUS | PF_SPACE) && res.str[0] != '-')
 		ctx->write(ctx, fmt->flags & PF_PLUS ? "+" : " ", 1);
-	pad_start(res.len + !!(fmt->flags & (PF_SPACE | PF_PLUS)), fmt, ctx);
+	pad_start(len, fmt, ctx);
 	if (!(fmt->flags & PF_ZERO) && fmt->flags & (PF_PLUS | PF_SPACE) && res.str[0] != '-')
 		ctx->write(ctx, fmt->flags & PF_PLUS ? "+" : " ", 1);
-	ctx->write(ctx, res.str + offset, res.len - offset);
-	pad_end(res.len + !!(fmt->flags & (PF_SPACE | PF_PLUS)), fmt, ctx);
+	if (res.str[0] == '-' && !offset)
+		ctx->write(ctx, "-", offset = 1);
+	if (fmt->precision != -1 && fmt->precision > res.len)
+		ctx->writer(ctx, '0', fmt->precision - res.len + offset);
+	if (!(fmt->precision == 0 && res.str[0] == '0'))
+		ctx->write(ctx, res.str + offset, res.len - offset);
+	pad_end(len, fmt, ctx);
 	return (0);
 }
 
@@ -188,11 +240,14 @@ int	fmtp(t_fmt *fmt, t_ctx *ctx)
 int	fmtc(t_fmt *fmt, t_ctx *ctx)
 {
 	char	buffer[MB_CUR_MAX];
-	size_t	len;
+	int		len;
 
 	TRY(get_arg(fmt->param, INT, &ctx->va));
 	if (fmt->length & PF_L)
-		len = wctomb(buffer, (wchar_t)fmt->param->value.i);
+	{
+		if ((len = wctomb(buffer, (wchar_t)fmt->param->value.i)) < 1)
+			return (0);
+	}
 	else
 	{
 		buffer[0] = fmt->param->value.i;
