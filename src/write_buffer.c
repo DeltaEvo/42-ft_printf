@@ -6,13 +6,13 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 14:08:40 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 14:09:52 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/05 15:18:38 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "ft/mem.h"
 #include "write_buffer.h"
 #include <stdlib.h>
-#include <string.h>
 
 void	bufferflush(t_ctx *ctx)
 {
@@ -24,7 +24,7 @@ void	bufferflush(t_ctx *ctx)
 			realloc(data->buffer, sizeof(char) * (data->len + data->idx));
 	else
 		data->buffer = malloc(sizeof(char) * data->idx);
-	memcpy(data->buffer + data->len, data->buf, data->idx);
+	ft_memcpy(data->buffer + data->len, data->buf, data->idx);
 	data->len = data->len + data->idx;
 	data->idx = 0;
 }

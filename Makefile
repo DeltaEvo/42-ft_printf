@@ -1,5 +1,5 @@
 NAME=libftprintf.a
-CFLAGS=-Wall -Wextra -Werror -Iinclude -Ilibft/include -g
+CFLAGS=-Wall -Wextra -Werror -Iinclude -Ilibft/include
 CC=gcc
 
 SRCS=src/arg.c src/eval.c src/fmt.c src/parse.c src/printf.c src/write_buffer.c src/write_out.c
@@ -10,10 +10,8 @@ all: $(NAME)
 
 $(OBJS): Makefile
 
-libft/libft.a:
+$(NAME): $(OBJS)
 	$(MAKE) -C libft
-
-$(NAME): $(OBJS) libft/libft.a
 	cp libft/libft.a $(NAME)
 	ar rcs $(NAME) $(OBJS)
 

@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:51:38 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 14:06:59 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/05 15:13:10 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,11 +133,11 @@ int	fmts(t_fmt *fmt, t_ctx *ctx)
 	if (fmt->param->value.p)
 	{
 		if (fmt->precision != -1)
-			len = (fmt->length & PF_L ? strnlen(fmt->param->value.p,
-			fmt->precision) : wstr_nlen(fmt->param->value.p, fmt->precision));
+			len = (fmt->length & PF_L ? wstr_nlen(fmt->param->value.p,
+				fmt->precision) : strnlen(fmt->param->value.p, fmt->precision));
 		else
-			len = (fmt->length & PF_L ? ft_strlen(fmt->param->value.p)
-					: wstr_len(fmt->param->value.p));
+			len = (fmt->length & PF_L ? wstr_len(fmt->param->value.p)
+					: ft_strlen(fmt->param->value.p));
 	}
 	else
 		len = fmt->precision == -1 ? 6 : fmt->precision;
@@ -170,7 +170,7 @@ int	fmtd(t_fmt *fmt, t_ctx *ctx)
 	len = res.len;
 	if (fmt->precision != -1 && (size_t)fmt->precision > len)
 		len = fmt->precision + (res.str[0] == '-');
-	len += !!(fmt->flags & (PF_SPACE | PF_PLUS));
+	len += res.str[0] != '-' && fmt->flags & (PF_SPACE | PF_PLUS);
 	len -= !!(fmt->precision == 0 && res.str[0] == '0');
 	if (fmt->flags & PF_ZERO && (res.str[0] == '-'))
 		ctx->write(ctx, res.str, offset = 1);
@@ -215,7 +215,7 @@ int	fmto(t_fmt *fmt, t_ctx *ctx)
 	if (fmt->flags & PF_HASH && (res.str[0] != '0' || fmt->precision == 0))
 		ctx->write(ctx, "0", 1);
 	if (fmt->precision != -1 && fmt->precision > res.len)
-		ctx->writer(ctx, '0', fmt->precision - res.len);
+		ctx->writer(ctx, '0', fmt->precision - res.len - !!(fmt->flags & PF_HASH));
 	if (!(fmt->precision == 0 && res.str[0] == '0'))
 		ctx->write(ctx, res.str, res.len);
 	pad_end(len, fmt, ctx);

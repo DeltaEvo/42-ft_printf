@@ -6,14 +6,14 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:37:19 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 14:30:54 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/05 15:17:55 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "eval.h"
 #include "fmt.h"
 #include "parse.h"
-#include <string.h>
+#include "ft/str.h"
 #include <alloca.h>
 
 static void	re_eval_fmt(t_farg *arg, t_fmt *f, t_ctx *ctx)
@@ -106,7 +106,7 @@ void		eval_fmt(char *fmt, t_ctx *ctx)
 	f_b = NULL;
 	arg_b = (t_farg) { .idx = 0, .type = NONE };
 	arg = (t_farg *)&arg_b;
-	while ((c = strchr(c, '%')))
+	while ((c = ft_strchr(c, '%')))
 	{
 		if (!ctx->va.lock)
 			ctx->write(ctx, f_b ? f->end : fmt, c - (f_b ? f->end : fmt));
@@ -120,5 +120,5 @@ void		eval_fmt(char *fmt, t_ctx *ctx)
 	}
 	if (ctx->va.lock)
 		re_eval_fmt((t_farg *)&arg_b, f_b, ctx);
-	ctx->write(ctx, f_b ? f->end : fmt, strlen(f_b ? f->end : fmt));
+	ctx->write(ctx, f_b ? f->end : fmt, ft_strlen(f_b ? f->end : fmt));
 }
