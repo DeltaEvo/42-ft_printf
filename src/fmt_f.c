@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:00:12 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 14:49:22 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 16:53:57 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,24 @@ static void	print(t_ctx *ctx, uint32_t *bigint, uint32_t len, int32_t maxnums)
 		}
 }
 
+static void round(uint32_t *bigint, uint32_t len, uint16_t exp,
+		uint32_t precision)
+{
+	const uint32_t	pos = exp - precision;
+	uint32_t		pow;
+	uint32_t		i;
+
+	if (pos / 9 > len)
+		return ;
+	bigint += pos / 9;
+	len -= pos / 9;
+	i = 0;
+	pow = 1;
+	while (++i < pos % 9)
+		pow *= 10;
+	*bigint += pow;
+}
+
 static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
 		uint32_t ints[2])
 {
@@ -77,7 +95,8 @@ static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
 	const uint16_t	p_exp = exp / 9;
 	const uint16_t	l_exp = exp % 9;
 
-	print(ctx, bigint + p_exp, len - p_exp - 1, -1);
+	round(bigint, len, exp, fmt->precision);
+	print(ctx, bigint + p_exp + 1, len - p_exp - 1, -1);
 	res = ft_uint_to_str(bigint[p_exp]);
 	if (res.len - l_exp)
 		ctx->write(ctx, res.str, res.len - l_exp);
@@ -111,6 +130,8 @@ int			fmtf(t_fmt *fmt, t_ctx *ctx)
 	bigint[1] = frac / POW10;
 	len = 2;
 	bigint_pow(bigint, exp < 0 ? 5 : 2, exp < 0 ? -exp : exp, &len);
+	if (d.p.sign)
+		ctx->write(ctx, "-", 1);
 	if (exp > 0)
 	{
 		print(ctx, bigint, len, -1);

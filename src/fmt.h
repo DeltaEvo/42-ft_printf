@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:58:32 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 14:04:30 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 16:08:24 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ int			fmtcu(t_fmt *fmt, t_ctx *ctx);
 int			fmtf(t_fmt *fmt, t_ctx *ctx);
 int			invalid_arg(t_fmt *fmt, t_ctx *ctx);
 
+int     	read_args(t_fmt *f, t_ctx *ctx);
 t_types		type_for_length(uint8_t length, uint8_t unsign);
 uintmax_t	downcast(uint8_t length, uintmax_t nb, uint8_t unsign);
 void		pad_end(size_t len, t_fmt *fmt, t_ctx *ctx);
@@ -59,7 +60,8 @@ static t_pf		*g_pf[] =
 	[TIDX('X')] = fmtxu,
 	[TIDX('c')] = fmtc,
 	[TIDX('C')] = fmtcu,
-	[TIDX('f')] = fmtf
+	[TIDX('f')] = fmtf,
+	[TIDX('F')] = fmtf
 };
 
 # define TRY(expr) if(expr == -1) return (-1)

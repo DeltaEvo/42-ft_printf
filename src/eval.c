@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:37:19 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 15:17:55 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 16:10:01 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ static void	re_eval_fmt(t_farg *arg, t_fmt *f, t_ctx *ctx)
 	}
 	while (f)
 	{
+		read_args(f, ctx);
 		fn = g_pf[TIDX(f->end[-1])];
 		if (fn)
 			fn(f, ctx);
@@ -49,6 +50,8 @@ static int	exec(t_parse *res, t_fmt *f, const t_farg *arg_begin, t_ctx *ctx)
 		f->precisionarg = arg_at_index(arg_begin, res->precision);
 	if (!f->widtharg && res->width != -1)
 		f->widtharg = arg_at_index(arg_begin, res->width);
+	if (read_args(f, ctx) == -1)
+		return (-1);
 	if (TIDX(f->end[-1]) < 0 ||
 			(uint32_t)TIDX(f->end[-1]) > sizeof(g_pf) / sizeof(*g_pf))
 	{

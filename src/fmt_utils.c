@@ -6,12 +6,37 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:02:11 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 14:04:38 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 17:03:28 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fmt.h"
 #include "parse.h"
+
+int		read_args(t_fmt *f, t_ctx *ctx)
+{
+	if (f->widtharg)
+	{
+		if (get_arg(f->widtharg, INT, &ctx->va) == -1)
+			return (-1);
+		if ((int)f->widtharg->value.i < 0)
+		{
+			f->width = -f->widtharg->value.i;
+			f->flags |= PF_MINUS;
+		}
+		else
+			f->width = f->widtharg->value.i;
+	}
+	if (f->precisionarg)
+	{
+		if (get_arg(f->precisionarg, INT, &ctx->va) == -1)
+			return (-1);
+		f->precision = f->precisionarg->value.i;
+		if (f->precision < 0)
+			f->precision = -1;
+	}
+	return (0);
+}
 
 void	pad_start(size_t len, t_fmt *fmt, t_ctx *ctx, uint8_t prec_c)
 {
