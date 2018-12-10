@@ -1,8 +1,8 @@
 NAME=libftprintf.a
-CFLAGS=-Wall -Wextra -Werror -Iinclude -Ilibft/include
+CFLAGS=-Wall -Wextra -Werror -Iinclude -Ilibft/include -g
 CC=gcc
 
-SRCS=src/arg.c src/eval.c src/fmt.c src/parse.c src/printf.c src/write_buffer.c src/write_out.c
+SRCS=src/arg.c src/eval.c src/fmt.c src/fmt_f.c src/fmt_utils.c src/parse.c src/printf.c src/write_buffer.c src/write_out.c
 
 OBJS=$(SRCS:.c=.o)
 

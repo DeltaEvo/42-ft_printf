@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:32:34 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 13:49:32 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 14:21:01 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,9 @@ static void	pop_arg(t_farg *arg, va_list ap)
 		arg->value.i = (arg->type == IMAX ? va_arg(ap, intmax_t)
 				: va_arg(ap, uintmax_t));
 	else if (arg->type == DBL)
-		arg->value.f = va_arg(ap, double);
+		arg->value.d = va_arg(ap, double);
 	else if (arg->type == LDBL)
-		arg->value.f = va_arg(ap, long double);
+		arg->value.d = va_arg(ap, long double);
 }
 
 int			resolve_arg(t_farg *arg, t_va_slist *ap)

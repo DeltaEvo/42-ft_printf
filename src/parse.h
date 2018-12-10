@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:30:22 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 14:30:44 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 14:28:29 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,12 @@ enum					e_pfelens
 	PF_L = 1 << 3,
 	PF_LL = 1 << 4,
 	PF_J = 1 << 5,
-	PF_Z = 1 << 6
+	PF_Z = 1 << 6,
+	PF_LU = 1 << 7
 };
 
 # define FIDX(i) ((i) - ' ')
-# define LIDX(i) ((i) - 'h')
+# define LIDX(i) ((i) - 'K')
 
 static enum e_pfflags	g_flags[] =
 {
@@ -54,6 +55,7 @@ static enum e_pfelens	g_elens[] =
 	[LIDX('l')] = PF_L,
 	[LIDX('j')] = PF_J,
 	[LIDX('z')] = PF_Z,
+	[LIDX('L')] = PF_LU,
 };
 
 # define MAX(a,b) ((a) > (b) ? (a) : (b))

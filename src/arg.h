@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:35:57 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 13:49:13 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/10 14:20:12 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ typedef struct	s_va_slist
 union			u_arg
 {
 	uintmax_t	i;
-	long double f;
+	double		d;
 	void		*p;
 };
 
