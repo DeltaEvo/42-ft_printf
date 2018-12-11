@@ -71,7 +71,7 @@ static void	print(t_ctx *ctx, uint32_t *bigint, uint32_t len, int32_t maxnums)
 static void	round(uint32_t *bigint, uint32_t len, uint16_t exp,
 		uint32_t precision)
 {
-	const uint32_t	pos = exp - precision;
+	const uint32_t	pos = exp - precision - 1;
 	uint32_t		pow;
 	uint32_t		i;
 
@@ -106,9 +106,9 @@ static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
 	const uint16_t	l_exp = exp % 9;
 	uint32_t		c_len;
 
-	c_len = (bigint[p_exp] ? nb_len(bigint[p_exp]) - l_exp
-		: 1) + (fmt->precision ? fmt->precision + 1 : 0)
-		+ (ints[2] || fmt->flags & (PF_SPACE | PF_PLUS));
+	c_len = nb_len(bigint[len - 1]) + (len - p_exp - 1) * 9
+		- l_exp + (fmt->precision ? fmt->precision + 1 : 0)
+		+ (ints[2] || (fmt->flags & (PF_SPACE | PF_PLUS)));
 	if (!(fmt->flags & PF_ZERO))
 		pad_start(c_len, fmt, ctx, 0);
 	if (ints[2])
@@ -120,17 +120,25 @@ static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
 	round(bigint, len, exp, fmt->precision);
 	print(ctx, bigint + p_exp + 1, len - p_exp - 1, -1);
 	res = ft_uint_to_str(bigint[p_exp]);
-	if (res.len - l_exp)
+	if (res.len > l_exp)
 		ctx->write(ctx, res.str, res.len - l_exp);
 	else
 		ctx->write(ctx, "0", 1);
-	ctx->write(ctx, ".", 1);
-	if (l_exp > fmt->precision)
-		ctx->write(ctx, res.str + (res.len - l_exp), fmt->precision);
-	else
+	if (fmt->precision)
 	{
-		ctx->write(ctx, res.str + (res.len - l_exp), l_exp);
-		print(ctx, bigint, p_exp, fmt->precision - l_exp);
+		ctx->write(ctx, ".", 1);
+		if (l_exp > fmt->precision)
+		{
+			if (res.len > l_exp)
+				ctx->write(ctx, res.str + (res.len - l_exp), fmt->precision);
+			else
+				ctx->writer(ctx, '0', fmt->precision);
+		}
+		else
+		{
+			ctx->write(ctx, res.str + (res.len - l_exp), l_exp);
+			print(ctx, bigint, p_exp, fmt->precision - l_exp);
+		}
 	}
 	pad_end(c_len, fmt, ctx);
 }
