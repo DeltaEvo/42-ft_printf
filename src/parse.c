@@ -6,35 +6,82 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:21:24 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 14:27:59 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 12:06:03 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parse.h"
-#include <ctype.h>
+#include "utils.h"
 
-static uint32_t	atoio(char **it)
+static uint8_t	parse_flags(char **it)
 {
-	int64_t	i;
+	uint8_t	flag;
 
-	i = 0;
-	while (isdigit(**it) && i >= 0)
-		i = i * 10 + *(*it)++ - '0';
-	if (i < 0 || i > UINT32_MAX)
+	if (FIDX(**it) < 0 || (size_t)FIDX(**it) >
+		(sizeof(g_flags) / sizeof(*g_flags)))
+		return (0);
+	if ((flag = g_flags[FIDX(**it)]))
 	{
-		while (isdigit(**it))
-			++*it;
-		i = 0;
+		++*it;
+		return (flag | parse_flags(it));
 	}
-	return ((uint32_t)i);
+	return (0);
 }
 
-t_parse	parse(char **it, t_fmt *f, uint32_t *idx)
+static int32_t	parse_width(char **it, t_fmt *fmt, uint32_t *idx)
+{
+	fmt->width = 0;
+	if (**it == '*')
+		return ((*++*it >= '0' && **it <= '9') ? atoio(it) - 1 : (*idx)++);
+	else if ((**it >= '0' && **it <= '9') || **it == '-')
+		fmt->width = atoio(it);
+	return (-1);
+}
+
+static int32_t	parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
+{
+	if (**it == '.')
+	{
+		++*it;
+		if (**it == '*')
+		{
+			fmt->precision = -1;
+			return ((*++*it >= '0' && **it <= '9') ? atoio(it) - 1 : (*idx)++);
+		}
+		else if (**it >= '0' && **it <= '9')
+			fmt->precision = atoio(it);
+	}
+	else
+		fmt->precision = -1;
+	return (-1);
+}
+
+static uint8_t	parse_length(char **it)
+{
+	uint8_t flag;
+
+	if (LIDX(**it) < 0 || (size_t)LIDX(**it) >
+		(sizeof(g_elens) / sizeof(*g_elens)))
+		return (0);
+	if ((flag = g_elens[LIDX(**it)]))
+	{
+		++*it;
+		if ((flag & PF_H && **it == 'h') || (flag & PF_L && **it == 'l'))
+		{
+			flag <<= 1;
+			++*it;
+		}
+		return (flag ? flag : parse_length(it));
+	}
+	return (0);
+}
+
+t_parse			parse(char **it, t_fmt *f, uint32_t *idx)
 {
 	t_parse	res;
 
 	f->begin = ++*it;
-	if (isdigit(**it))
+	if (**it >= '9' && **it <= '9')
 	{
 		res.param = atoio(it) - 1;
 		if (*(*it)++ != '$')
@@ -54,67 +101,4 @@ t_parse	parse(char **it, t_fmt *f, uint32_t *idx)
 		res.param = (*idx)++;
 	res.max = MAX(MAX(MAX(res.param, res.width), res.precision), 0);
 	return (res);
-}
-
-uint8_t	parse_flags(char **it)
-{
-	uint8_t	flag;
-
-	if (FIDX(**it) < 0 || (size_t)FIDX(**it) >
-		(sizeof(g_flags) / sizeof(*g_flags)))
-		return (0);
-	if ((flag = g_flags[FIDX(**it)]))
-	{
-		++*it;
-		return (flag | parse_flags(it));
-	}
-	return (0);
-}
-
-int32_t	parse_width(char **it, t_fmt *fmt, uint32_t *idx)
-{
-	fmt->width = 0;
-	if (**it == '*')
-		return (isdigit(*++*it) ? atoio(it) - 1 : (*idx)++);
-	else if (isdigit(**it) || **it == '-')
-		fmt->width = atoio(it);
-	return (-1);
-}
-
-int32_t	parse_precision(char **it, t_fmt *fmt, uint32_t *idx)
-{
-	if (**it == '.')
-	{
-		++*it;
-		if (**it == '*')
-		{
-			fmt->precision = -1;
-			return (isdigit(*++*it) ? atoio(it) - 1 : (*idx)++);
-		}
-		else if (isdigit(**it))
-			fmt->precision = atoio(it);
-	}
-	else
-		fmt->precision = -1;
-	return (-1);
-}
-
-uint8_t	parse_length(char **it)
-{
-	uint8_t flag;
-
-	if (LIDX(**it) < 0 || (size_t)LIDX(**it) >
-		(sizeof(g_elens) / sizeof(*g_elens)))
-		return (0);
-	if ((flag = g_elens[LIDX(**it)]))
-	{
-		++*it;
-		if ((flag & PF_H && **it == 'h') || (flag & PF_L && **it == 'l'))
-		{
-			flag <<= 1;
-			++*it;
-		}
-		return (flag ? flag : parse_length(it));
-	}
-	return (0);
 }

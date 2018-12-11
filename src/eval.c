@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:37:19 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 16:10:01 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 12:18:35 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,31 +97,30 @@ static void	next_fmt(t_fmt **begin, t_fmt **f, t_fmt *next)
 	*f = next;
 }
 
-void		eval_fmt(char *fmt, t_ctx *ctx)
+void		eval_fmt(char *fmt, t_ctx *ct)
 {
 	const char		*c = fmt;
-	t_fmt			*f;
-	t_fmt			*f_b;
+	t_fmt			*f[2];
 	t_parse			res;
 	t_farg			*arg;
-	t_farg 			arg_b;
+	t_farg			arg_b;
 
-	f_b = NULL;
+	f[0] = NULL;
 	arg_b = (t_farg) { .idx = 0, .type = NONE };
 	arg = (t_farg *)&arg_b;
 	while ((c = ft_strchr(c, '%')))
 	{
-		if (!ctx->va.lock)
-			ctx->write(ctx, f_b ? f->end : fmt, c - (f_b ? f->end : fmt));
-		next_fmt(&f_b, &f, alloca(sizeof(t_fmt)));
-		res = parse((char **)&c, f, &ctx->idx);
+		if (!ct->va.lock)
+			ct->write(ct, f[0] ? f[1]->end : fmt, c - (f[0] ? f[1]->end : fmt));
+		next_fmt(f, f + 1, alloca(sizeof(t_fmt)));
+		res = parse((char **)&c, f[1], &ct->idx);
 		res.max -= arg->idx;
 		while (res.max-- > 0)
-			next_arg(&arg, alloca(sizeof(t_farg)), f, &res);
-		if (exec(&res, f, &arg_b, ctx) == -1 && !ctx->va.lock && (f_b = f))
-			ctx->va.lock = 1;
+			next_arg(&arg, alloca(sizeof(t_farg)), f[1], &res);
+		if (exec(&res, f[1], &arg_b, ct) == -1 && !ct->va.lock && (f[0] = f[1]))
+			ct->va.lock = 1;
 	}
-	if (ctx->va.lock)
-		re_eval_fmt((t_farg *)&arg_b, f_b, ctx);
-	ctx->write(ctx, f_b ? f->end : fmt, ft_strlen(f_b ? f->end : fmt));
+	if (ct->va.lock)
+		re_eval_fmt((t_farg *)&arg_b, f[0], ct);
+	ct->write(ct, f[0] ? f[1]->end : fmt, ft_strlen(f[0] ? f[1]->end : fmt));
 }

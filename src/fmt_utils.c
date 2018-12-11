@@ -6,14 +6,14 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:02:11 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 17:03:28 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 13:36:54 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fmt.h"
 #include "parse.h"
 
-int		read_args(t_fmt *f, t_ctx *ctx)
+int			read_args(t_fmt *f, t_ctx *ctx)
 {
 	if (f->widtharg)
 	{
@@ -38,17 +38,19 @@ int		read_args(t_fmt *f, t_ctx *ctx)
 	return (0);
 }
 
-void	pad_start(size_t len, t_fmt *fmt, t_ctx *ctx, uint8_t prec_c)
+int			pad_start(size_t len, t_fmt *fmt, t_ctx *ctx, uint8_t prec_c)
 {
 	if (!(fmt->flags & PF_MINUS) && len < fmt->width)
 		ctx->writer(ctx, fmt->flags & PF_ZERO
 		&& !(prec_c && fmt->precision != -1) ? '0' : ' ', fmt->width - len);
+	return (0);
 }
 
-void	pad_end(size_t len, t_fmt *fmt, t_ctx *ctx)
+int			pad_end(size_t len, t_fmt *fmt, t_ctx *ctx)
 {
 	if (fmt->flags & PF_MINUS && len < fmt->width)
 		ctx->writer(ctx, ' ', fmt->width - len);
+	return (0);
 }
 
 uintmax_t	downcast(uint8_t length, uintmax_t nb, uint8_t unsign)
@@ -70,7 +72,7 @@ uintmax_t	downcast(uint8_t length, uintmax_t nb, uint8_t unsign)
 	return (nb);
 }
 
-t_types	type_for_length(uint8_t length, uint8_t unsign)
+t_types		type_for_length(uint8_t length, uint8_t unsign)
 {
 	if (length & PF_L)
 		return (unsign ? ULONG : LONG);

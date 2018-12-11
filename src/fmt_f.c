@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:00:12 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 16:53:57 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 12:18:52 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ static void	print(t_ctx *ctx, uint32_t *bigint, uint32_t len, int32_t maxnums)
 		}
 }
 
-static void round(uint32_t *bigint, uint32_t len, uint16_t exp,
+static void	round(uint32_t *bigint, uint32_t len, uint16_t exp,
 		uint32_t precision)
 {
 	const uint32_t	pos = exp - precision;
@@ -80,7 +80,7 @@ static void round(uint32_t *bigint, uint32_t len, uint16_t exp,
 	bigint += pos / 9;
 	len -= pos / 9;
 	i = 0;
-	pow = 1;
+	pow = 5;
 	while (++i < pos % 9)
 		pow *= 10;
 	*bigint += pow;

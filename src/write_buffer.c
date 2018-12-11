@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 14:08:40 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/05 15:18:38 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 14:16:12 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ void	bufferflush(t_ctx *ctx)
 	data = ((t_buffer_wdata *)ctx->write_data);
 	if (data->buffer)
 		data->buffer =
-			realloc(data->buffer, sizeof(char) * (data->len + data->idx));
+			ft_realloc(data->buffer, data->len, (data->len + data->idx));
 	else
-		data->buffer = malloc(sizeof(char) * data->idx);
+		data->buffer = malloc(data->idx);
 	ft_memcpy(data->buffer + data->len, data->buf, data->idx);
 	data->len = data->len + data->idx;
 	data->idx = 0;

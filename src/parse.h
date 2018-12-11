@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/05 13:30:22 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/10 14:28:29 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 12:04:25 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,5 @@ typedef struct			s_parse {
 }						t_parse;
 
 t_parse					parse(char **it, t_fmt *f, uint32_t *idx);
-uint8_t					parse_flags(char **it);
-int32_t					parse_width(char **it, t_fmt *fmt, uint32_t *idx);
-int32_t					parse_precision(char **it, t_fmt *fmt, uint32_t *idx);
-uint8_t					parse_length(char **it);
 
 #endif
