@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:00:12 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/11 12:18:52 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/11 16:27:28 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,15 +86,37 @@ static void	round(uint32_t *bigint, uint32_t len, uint16_t exp,
 	*bigint += pow;
 }
 
+size_t		nb_len(uint64_t n)
+{
+	size_t	len;
+
+	len = 1;
+	while (n /= 10)
+		len++;
+	return (len);
+}
+
 static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
-		uint32_t ints[2])
+		uint32_t ints[3])
 {
 	t_int_str		res;
 	const uint32_t	len = ints[0];
 	const uint16_t	exp = ints[1];
 	const uint16_t	p_exp = exp / 9;
 	const uint16_t	l_exp = exp % 9;
+	uint32_t		c_len;
 
+	c_len = (bigint[p_exp] ? nb_len(bigint[p_exp]) - l_exp
+		: 1) + (fmt->precision ? fmt->precision + 1 : 0)
+		+ (ints[2] || fmt->flags & (PF_SPACE | PF_PLUS));
+	if (!(fmt->flags & PF_ZERO))
+		pad_start(c_len, fmt, ctx, 0);
+	if (ints[2])
+		ctx->write(ctx, "-", 1);
+	else if (fmt->flags & (PF_SPACE | PF_PLUS))
+		ctx->write(ctx, fmt->flags & PF_SPACE ? " " : "+", 1);
+	if (fmt->flags & PF_ZERO)
+		pad_start(c_len, fmt, ctx, 0);
 	round(bigint, len, exp, fmt->precision);
 	print(ctx, bigint + p_exp + 1, len - p_exp - 1, -1);
 	res = ft_uint_to_str(bigint[p_exp]);
@@ -110,6 +132,33 @@ static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint,
 		ctx->write(ctx, res.str + (res.len - l_exp), l_exp);
 		print(ctx, bigint, p_exp, fmt->precision - l_exp);
 	}
+	pad_end(c_len, fmt, ctx);
+}
+
+static void	print_real(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint, uint32_t i[2])
+{
+	const uint32_t	len = i[0];
+	const uint32_t	sign = i[1];
+	uint32_t		c_len;
+
+	c_len = nb_len(bigint[len - 1]) + (len - 1) * 9
+		+ (fmt->precision ? 1 + fmt->precision : 0)
+		+ (sign || fmt->flags & (PF_SPACE | PF_PLUS));
+	if (!(fmt->flags & PF_ZERO))
+		pad_start(c_len, fmt, ctx, 0);
+	if (sign)
+		ctx->write(ctx, "-", 1);
+	else if (fmt->flags & (PF_SPACE | PF_PLUS))
+		ctx->write(ctx, fmt->flags & PF_SPACE ? " " : "+", 1);
+	if (fmt->flags & PF_ZERO)
+		pad_start(c_len, fmt, ctx, 0);
+	print(ctx, bigint, len, -1);
+	if (fmt->precision)
+	{
+		ctx->write(ctx, ".", 1);
+		ctx->writer(ctx, '0', fmt->precision);
+	}
+	pad_end(c_len, fmt, ctx);
 }
 
 int			fmtf(t_fmt *fmt, t_ctx *ctx)
@@ -130,18 +179,9 @@ int			fmtf(t_fmt *fmt, t_ctx *ctx)
 	bigint[1] = frac / POW10;
 	len = 2;
 	bigint_pow(bigint, exp < 0 ? 5 : 2, exp < 0 ? -exp : exp, &len);
-	if (d.p.sign)
-		ctx->write(ctx, "-", 1);
 	if (exp > 0)
-	{
-		print(ctx, bigint, len, -1);
-		if (fmt->precision)
-		{
-			ctx->write(ctx, ".", 1);
-			ctx->writer(ctx, '0', fmt->precision);
-		}
-	}
+		print_real(ctx, fmt, bigint, (uint32_t[2]){ len, d.p.sign });
 	else
-		print_float(ctx, fmt, bigint, (uint32_t[2]){ len, -exp });
+		print_float(ctx, fmt, bigint, (uint32_t[3]){ len, -exp, d.p.sign });
 	return (0);
 }
