@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:00:12 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/12 13:00:46 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/12 14:58:35 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,17 +20,18 @@ void		bigint_pow(uint32_t *bigint, uint8_t n, uint16_t exp, uint32_t *len)
 {
 	uint32_t	carry;
 	uint64_t	t;
-	int32_t		i;
+	uint32_t	i;
 
 	while (exp--)
 	{
 		carry = 0;
-		i = -1;
-		while ((uint32_t)++i < *len)
+		i = 0;
+		while (i < *len)
 		{
 			t = (uint64_t)bigint[i] * n + carry;
 			bigint[i] = t % POW10;
 			carry = t / POW10;
+			i++;
 		}
 		if (carry)
 			bigint[(*len)++] = carry;

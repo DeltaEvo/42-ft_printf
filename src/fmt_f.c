@@ -6,7 +6,7 @@
 /*   By: dde-jesu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 14:00:12 by dde-jesu          #+#    #+#             */
-/*   Updated: 2018/12/12 13:51:48 by dde-jesu         ###   ########.fr       */
+/*   Updated: 2018/12/12 14:56:10 by dde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,38 +47,34 @@ static void	print(t_ctx *ctx, uint32_t *bigint, uint32_t len, int32_t maxnums)
 		}
 }
 
-static void	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigi,
+static int	print_float(t_ctx *ctx, t_fmt *fmt, uint32_t *bigi,
 		uint32_t ints[3])
 {
 	t_int_str		r;
-	const uint32_t	len = ints[0];
-	const uint16_t	p_exp = ints[1] / 9;
-	const uint16_t	l_exp = ints[1] % 9;
+	const uint16_t	p_e = ints[1] / 9;
+	const uint16_t	l_e = ints[1] % 9;
 	uint32_t		c_len;
 
-	c_len = (!l_exp || nb_len(bigi[len - 1]) == l_exp) + nb_len(bigi[len - 1])
-		+ ((int32_t)len - p_exp - 1) * 9 - l_exp + (fmt->precision ?
+	c_len = (!l_e || nb_len(bigi[*ints - 1]) == l_e) + nb_len(bigi[*ints - 1])
+		+ ((int32_t)*ints - p_e - 1) * 9 - l_e + (fmt->precision ?
 	fmt->precision + 1 : 0) + (ints[2] || (fmt->flags & (PF_SPACE | PF_PLUS)));
 	(!(fmt->flags & PF_ZERO) ? pad_start(c_len, fmt, ctx, 0) : 0);
-	if (ints[2])
-		ctx->write(ctx, "-", 1);
-	else if (fmt->flags & (PF_SPACE | PF_PLUS))
+	(ints[2] ? ctx->write(ctx, "-", 1) : 0);
+	if (!ints[2] && fmt->flags & (PF_SPACE | PF_PLUS))
 		ctx->write(ctx, fmt->flags & PF_SPACE ? " " : "+", 1);
 	(fmt->flags & PF_ZERO ? pad_start(c_len, fmt, ctx, 0) : 0);
-	bigint_round(bigi, len, ints[1], fmt->precision);
-	print(ctx, bigi + p_exp + 1, len - p_exp - 1, -1);
-	r = ft_uint_to_str(bigi[p_exp]);
-	ctx->write(ctx, r.len > l_exp ? r.str : "0",
-			r.len > l_exp ? r.len - l_exp : 1);
-	if (fmt->precision)
-	{
-		ctx->write(ctx, ".", 1);
-		if (l_exp > r.len)
-			ctx->writer(ctx, '0', ft_min(fmt->precision, l_exp - r.len));
-		ctx->write(ctx, r.str + (r.len - l_exp), ft_min(fmt->precision, l_exp));
-		print(ctx, bigi, p_exp, fmt->precision - ft_min(fmt->precision, l_exp));
-	}
-	pad_end(c_len, fmt, ctx);
+	bigint_round(bigi, *ints, ints[1], fmt->precision);
+	print(ctx, bigi + p_e + 1, *ints - p_e - 1, -1);
+	r = ft_uint_to_str(bigi[p_e]);
+	ctx->write(ctx, r.len > l_e ? r.str : "0", r.len > l_e ? r.len - l_e : 1);
+	if (!fmt->precision)
+		return (pad_end(c_len, fmt, ctx));
+	ctx->write(ctx, ".", 1);
+	if (l_e > r.len)
+		ctx->writer(ctx, '0', ft_min(fmt->precision, l_e - r.len));
+	ctx->write(ctx, r.str + (r.len - l_e), ft_min(fmt->precision, l_e));
+	print(ctx, bigi, p_e, fmt->precision - ft_min(fmt->precision, l_e));
+	return (pad_end(c_len, fmt, ctx));
 }
 
 static void	print_real(t_ctx *ctx, t_fmt *fmt, uint32_t *bigint, uint32_t i[2])
